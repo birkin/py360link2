@@ -90,8 +90,6 @@ def get_sersol_response(query, key, timeout):
     base_url = "http://%s.openurl.xml.serialssolutions.com/openurlxml?" % key
     base_url += urllib.urlencode(required_url_elements)
     url = base_url + '&%s' % query.lstrip('?')
-    # f = urllib2.urlopen(url, timeout=timeout)
-    # doc = etree.parse(f)
     r = requests.get( url )
     filelike_obj = StringIO.StringIO( r.content )
     doc = etree.parse( filelike_obj )
@@ -106,18 +104,18 @@ def get_sersol_data(query, key=None, timeout=5):
 
     Specify a timeout for the http request to 360Link.
 
+    Conversion to and from json is because `data` contains lxml _ElementStringResult elements,
+    which can cause pickling problems.
     """
     logger.debug( 'starting get_sersol_data()' )
     if query is None:
         raise Link360Exception('OpenURL query required.')
     doc = get_sersol_response(query, key, timeout)
     data = Link360JSON(doc).convert()
-    pprint.pprint( data )
     jsn = json.dumps( data )
     jdct = json.loads( jsn )
-    print '-------'
-    pprint.pprint( jdct )
     return jdct
+
 
 class Link360JSON(object):
     """
@@ -140,10 +138,10 @@ class Link360JSON(object):
 
         def x(xpathexpr, root = self.doc):
             x_data = root.xpath(xpathexpr, namespaces=ns)
-            logger.debug( x_data )
-            if type(x_data) == list:
-                if len( x_data ) > 0:
-                    logger.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
+            # logger.debug( x_data )
+            # if type(x_data) == list:
+            #     if len( x_data ) > 0:
+            #         logger.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
             return x_data
 
         def t(xpathexpr, root = self.doc):
@@ -223,6 +221,8 @@ class Link360JSON(object):
             # TBD derivedQueryData
         )
 
+    # end class Link360JSON
+
 
 class Resolved(object):
     """
@@ -242,7 +242,6 @@ class Resolved(object):
         self.citation = data['results'][0]['citation']
         self.link_groups = data['results'][0]['linkGroups']
         self.format = data['results'][0]['format']
-
 
     @property
     def openurl(self):
@@ -343,3 +342,5 @@ class Resolved(object):
         retained_values = self._retain_ourl_params()
         out += retained_values
         return out
+
+    # end class Resolved
