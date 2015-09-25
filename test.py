@@ -12,11 +12,11 @@ supplied.
 from pprint import pprint
 import unittest
 import urlparse
-from py360link import get_sersol_data, Resolved
+from py360link2 import get_sersol_data, Resolved
 
 
 #A 360Link API key needs to be specified here.
-KEY = os.environ['PY360LINK__TEST_KEY']
+KEY = os.environ['PY360LINK2__TEST_KEY']
 
 class TestPmidLookup(unittest.TestCase):
     """

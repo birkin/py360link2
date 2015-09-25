@@ -1,4 +1,4 @@
-py360Link_v2
+py360Link2
 ============
 
 Python utilities for working with the 360Link XML API from Serial Solutions.
@@ -13,14 +13,14 @@ Overview of the 360Link API: <http://journal.code4lib.org/articles/108>
 Install
 -------
 
-pip install git+git://github.com/birkin/py360link_v2.git
+pip install git+git://github.com/birkin/py360link2.git
 
 
 Use
 ---
 
 ```python
-from py360link import get_sersol_data, Resolved
+from py360link2 import get_sersol_data, Resolved
 query = 'rft_id=info:doi/10.1016/j.neuroimage.2009.12.024'
 sersol_data = get_sersol_data(query, key='yourkey')
 resolved = Resolved(sersol_data)
