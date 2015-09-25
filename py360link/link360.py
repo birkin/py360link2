@@ -1,6 +1,7 @@
-import urllib
+import json, logging, pprint, re, StringIO, urllib, urllib2, urlparse
+import requests
 from lxml import etree
-import urlparse
+
 
 #Added to avoid the following errors:
 #Cannot convert lxml.etree._RotatingErrorLog to lxml.etree._BaseErrorLog
@@ -10,7 +11,6 @@ class Logger(etree.PyErrorLog):
 etree.use_global_python_log(Logger())
 
 
-import logging
 logging.basicConfig(
     filename='', level='DEBUG',
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
@@ -72,12 +72,11 @@ class Link360Exception(Exception):
         Exception.__init__(self, message)
         self.Errors = Errors
 
+
 def get_sersol_response(query, key, timeout):
     """
     Get the SerSol API response and parse it into an etree.
     """
-    import urllib2
-    import StringIO
     if key is None:
         raise Link360Exception('Serial Solutions 360Link XML API key is required.')
 
@@ -91,37 +90,11 @@ def get_sersol_response(query, key, timeout):
     url = base_url + '&%s' % query.lstrip('?')
     # f = urllib2.urlopen(url, timeout=timeout)
     # doc = etree.parse(f)
-    import requests
-    # from StringIO import StringIO as SIO
     r = requests.get( url )
     filelike_obj = StringIO.StringIO( r.content )
     doc = etree.parse( filelike_obj )
     return doc
 
-# def get_sersol_response(query, key, timeout):
-#     """
-#     Get the SerSol API response and parse it into an etree.
-#     """
-#     import urllib2
-#     if key is None:
-#         raise Link360Exception('Serial Solutions 360Link XML API key is required.')
-
-#     required_url_elements = {}
-#     required_url_elements['version'] = '1.0'
-#     required_url_elements['url_ver'] = 'Z39.88-2004'
-#     #Go get the 360link response
-#     #Base 360Link url
-#     base_url = "http://%s.openurl.xml.serialssolutions.com/openurlxml?" % key
-#     base_url += urllib.urlencode(required_url_elements)
-#     url = base_url + '&%s' % query.lstrip('?')
-#     # f = urllib2.urlopen(url, timeout=timeout)
-#     # doc = etree.parse(f)
-#     import requests
-#     from StringIO import StringIO as SIO
-#     r = requests.get( url )
-#     filelike_obj = SIO( r.content )
-#     doc = etree.parse( filelike_obj )
-#     return doc
 
 def get_sersol_data(query, key=None, timeout=5):
     """
@@ -132,14 +105,12 @@ def get_sersol_data(query, key=None, timeout=5):
     Specify a timeout for the http request to 360Link.
 
     """
-    import pprint
     logger.debug( 'starting get_sersol_data()' )
     if query is None:
         raise Link360Exception('OpenURL query required.')
     doc = get_sersol_response(query, key, timeout)
     data = Link360JSON(doc).convert()
     pprint.pprint( data )
-    import json
     jsn = json.dumps( data )
     jdct = json.loads( jsn )
     print '-------'
@@ -282,7 +253,6 @@ class Resolved(object):
         Primarily meant for storing the worldcat accession number passed on
         by Worldcat.org/FirstSearch
         """
-        import re
         reg = re.compile('\d+')
         dat = self.query_dict.get('rfe_dat', None)
         if dat:
