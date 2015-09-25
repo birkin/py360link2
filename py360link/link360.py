@@ -9,6 +9,18 @@ class Logger(etree.PyErrorLog):
         pass
 etree.use_global_python_log(Logger())
 
+
+import logging
+logging.basicConfig(
+    filename='', level='DEBUG',
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S'
+    )
+logger = logging.getLogger(__name__)
+logger.debug( 'link360.py START' )
+
+
+
 SERSOL_KEY = None
 
 #Make the OpenURL for passing on.
@@ -65,9 +77,10 @@ def get_sersol_response(query, key, timeout):
     Get the SerSol API response and parse it into an etree.
     """
     import urllib2
+    import StringIO
     if key is None:
         raise Link360Exception('Serial Solutions 360Link XML API key is required.')
-    
+
     required_url_elements = {}
     required_url_elements['version'] = '1.0'
     required_url_elements['url_ver'] = 'Z39.88-2004'
@@ -76,24 +89,62 @@ def get_sersol_response(query, key, timeout):
     base_url = "http://%s.openurl.xml.serialssolutions.com/openurlxml?" % key
     base_url += urllib.urlencode(required_url_elements)
     url = base_url + '&%s' % query.lstrip('?')
-    f = urllib2.urlopen(url, timeout=timeout)
-    doc = etree.parse(f)
+    # f = urllib2.urlopen(url, timeout=timeout)
+    # doc = etree.parse(f)
+    import requests
+    # from StringIO import StringIO as SIO
+    r = requests.get( url )
+    filelike_obj = StringIO.StringIO( r.content )
+    doc = etree.parse( filelike_obj )
     return doc
+
+# def get_sersol_response(query, key, timeout):
+#     """
+#     Get the SerSol API response and parse it into an etree.
+#     """
+#     import urllib2
+#     if key is None:
+#         raise Link360Exception('Serial Solutions 360Link XML API key is required.')
+
+#     required_url_elements = {}
+#     required_url_elements['version'] = '1.0'
+#     required_url_elements['url_ver'] = 'Z39.88-2004'
+#     #Go get the 360link response
+#     #Base 360Link url
+#     base_url = "http://%s.openurl.xml.serialssolutions.com/openurlxml?" % key
+#     base_url += urllib.urlencode(required_url_elements)
+#     url = base_url + '&%s' % query.lstrip('?')
+#     # f = urllib2.urlopen(url, timeout=timeout)
+#     # doc = etree.parse(f)
+#     import requests
+#     from StringIO import StringIO as SIO
+#     r = requests.get( url )
+#     filelike_obj = SIO( r.content )
+#     doc = etree.parse( filelike_obj )
+#     return doc
 
 def get_sersol_data(query, key=None, timeout=5):
     """
     Get and process the data from the API and store in Python dictionary.
     If you would like to cache the 360Link responses, this is data structure
-    that you would like to cache.  
-    
+    that you would like to cache.
+
     Specify a timeout for the http request to 360Link.
-    
+
     """
+    import pprint
+    logger.debug( 'starting get_sersol_data()' )
     if query is None:
         raise Link360Exception('OpenURL query required.')
     doc = get_sersol_response(query, key, timeout)
     data = Link360JSON(doc).convert()
-    return data
+    pprint.pprint( data )
+    import json
+    jsn = json.dumps( data )
+    jdct = json.loads( jsn )
+    print '-------'
+    pprint.pprint( jdct )
+    return jdct
 
 class Link360JSON(object):
     """
@@ -106,6 +157,8 @@ class Link360JSON(object):
 
     def convert(self):
 
+        logger.debug( 'starting convert' )
+
         ns = {
             "ss" : "http://xml.serialssolutions.com/ns/openurl/v1.0",
             "sd" : "http://xml.serialssolutions.com/ns/diagnostics/v1.0",
@@ -113,7 +166,12 @@ class Link360JSON(object):
         }
 
         def x(xpathexpr, root = self.doc):
-            return root.xpath(xpathexpr, namespaces=ns)
+            x_data = root.xpath(xpathexpr, namespaces=ns)
+            logger.debug( x_data )
+            if type(x_data) == list:
+                if len( x_data ) > 0:
+                    logger.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
+            return x_data
 
         def t(xpathexpr, root = self.doc):
             r = x(xpathexpr, root)
@@ -128,7 +186,7 @@ class Link360JSON(object):
                     dict[k] = v
             return dict
 
-        return m({ 
+        return m({
             'version' : t("//ss:version/text()"),
             'echoedQuery' : {
                 'queryString' : t("//ss:echoedQuery/ss:queryString/text()"),
@@ -167,31 +225,31 @@ class Link360JSON(object):
                 ),
                 'linkGroups' : [ {
                     'type' : t("./@type", group),
-                    'holdingData' : m({ 
+                    'holdingData' : m({
                             'providerId' : t(".//ss:providerId/text()", group),
                             'providerName' : t(".//ss:providerName/text()", group),
                             'databaseId' : t(".//ss:databaseId/text()", group),
                             'databaseName' : t(".//ss:databaseName/text()", group),
                         },
-                        # output normalizedData/startDate instead of startDate, 
+                        # output normalizedData/startDate instead of startDate,
                         # assuming that 'startDate' is redundant
                         ('startDate' , t(".//ss:normalizedData/ss:startDate/text()", group)),
                         ('endDate' , t(".//ss:normalizedData/ss:endDate/text()", group))),
                     # assumes at most one URL per type
-                    'url' : dict([ (t("./@type", url), t("./text()", url)) 
+                    'url' : dict([ (t("./@type", url), t("./text()", url))
                                    for url in x("./ss:url", group) ])
                 } for group in x("//ss:linkGroups/ss:linkGroup")]
-            } for result in x("//ss:result") ] }, 
+            } for result in x("//ss:result") ] },
             # optional
-            ('diagnostics', 
+            ('diagnostics',
                 [ m({ 'uri' : t("./sd:uri/text()", diag) },
-                    ('details', t("./sd:details/text()", diag)), 
+                    ('details', t("./sd:details/text()", diag)),
                     ('message', t("./sd:message/text()", diag))
                 ) for diag in x("//sd:diagnostic")]
             )
             # TBD derivedQueryData
         )
-        
+
 
 class Resolved(object):
     """
@@ -206,17 +264,17 @@ class Resolved(object):
         if error:
             msg = ' '.join([e.get('message') for e in error if e])
             raise Link360Exception(msg)
-        
+
         #Shortcut to first returned citation and link group
         self.citation = data['results'][0]['citation']
         self.link_groups = data['results'][0]['linkGroups']
         self.format = data['results'][0]['format']
-    
-        
+
+
     @property
     def openurl(self):
         return urllib.urlencode(self.openurl_pairs(), doseq=True)
-    
+
     @property
     def oclc_number(self):
         """
@@ -233,13 +291,13 @@ class Resolved(object):
             if match:
                 return match.group()
         return
-    
+
     def _retain_ourl_params(self):
         """
         Parse the original query string and retain certain key, values.
         Primarily meant for storing the worldcat accession number passed on
         by http://worldcat.org or FirstSearch.
-        
+
         This could be also helpful for retaining any other metadata that won't
         be returned from the 360Link API.
         """
@@ -251,21 +309,21 @@ class Resolved(object):
             if val:
                 out.append((key, val))
         return out
-    
+
     def openurl_pairs(self):
         """
         Create a default OpenURL from the given citation that can be passed
         on to other systems for querying.
-          
+
         Subclass this to handle needs for specific system.
-        
+
         See http://ocoins.info/cobg.html for implementation guidelines.
         """
         query = urlparse.parse_qs(self.query)
         format = self.format
         #Pop invalid rft_id from OCLC
         try:
-            
+
             if query['rft_id'][0].startswith('info:oclcnum'):
                 del query['rft_id']
         except KeyError:
@@ -284,12 +342,12 @@ class Resolved(object):
                 if issn:
                     out.append(('rft.issn', issn))
                 continue
-            #Handle remaining keys. 
+            #Handle remaining keys.
             try:
                 k = SERSOL_MAP[format][k]
             except KeyError:
                 pass
-            #handle ids separately 
+            #handle ids separately
             if (k == 'doi'):
                 out.append(('rft_id', 'info:doi/%s' % v))
             elif (k == 'pmid'):
@@ -303,13 +361,13 @@ class Resolved(object):
         out.append(('version', '1.0'))
         #handle formats
         if format == 'book':
-            out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:book'))  
+            out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:book'))
             out.append(('rft.genre', 'book'))
         #for now will treat all non-books as journals
         else:
-            out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:journal')) 
+            out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:journal'))
             out.append(('rft.genre', 'article'))
-        #Get the special keys.   
+        #Get the special keys.
         retained_values = self._retain_ourl_params()
         out += retained_values
         return out
