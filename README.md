@@ -1,19 +1,19 @@
-py360Link
-=========
+py360Link_v2
+============
 
 Python utilities for working with the 360Link XML API from Serial Solutions.
 
-It requires a 360Link XML API key, which is generally the site id that prefixes all Serial Solutions customer web pages, e.g. http://r123456.search.serialssolutions.com.
+It requires a 360Link XML API key, which is generally the site id that prefixes all Serial Solutions customer web pages, e.g.:
 
+    `http://r123456.search.serialssolutions.com`
 
-You might also be interested in this overview of the 360Link API:
-http://journal.code4lib.org/articles/108
+Overview of the 360Link API: <http://journal.code4lib.org/articles/108>
 
 
 Install
 -------
 
-pip install git+git://github.com/lawlesst/py360link.git
+pip install git+git://github.com/birkin/py360link_v2.git
 
 
 Use
@@ -30,4 +30,4 @@ resolved = Resolved(sersol_data)
 Acknowledgements
 ----------------
 
-Much of this code is repurposed code from Godmar Back's [link360 utilities](http://code.google.com/p/link360/).
+Much of this code was repurposed -- from Godmar Back's [link360 utilities](http://code.google.com/p/link360/) -- by [Ted Lawless](https://github.com/lawlesst/py360link).
