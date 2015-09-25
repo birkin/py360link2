@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
 import json, logging, pprint, re, StringIO, urllib, urllib2, urlparse
 import requests
 from lxml import etree
@@ -18,7 +21,6 @@ logging.basicConfig(
     )
 logger = logging.getLogger(__name__)
 logger.debug( 'link360.py START' )
-
 
 
 SERSOL_KEY = None

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
+
 """
 Tests for handling OpenURLs with 360Link.
 
@@ -9,6 +13,7 @@ from pprint import pprint
 import unittest
 import urlparse
 from py360link import get_sersol_data, Resolved
+
 
 #A 360Link API key needs to be specified here.
 KEY = os.environ['PY360LINK__TEST_KEY']
