@@ -25,6 +25,10 @@ class TestPmidLookup(unittest.TestCase):
         data = get_sersol_data(ourl, key=KEY)
         self.sersol = Resolved(data)
 
+    def test_get_sersol_data_types(self):
+        """ Checks for unicode data in initially retrieved data. """
+        self.assertEqual( 1, 2 )
+
     def test_link_groups(self):
         """
         These will depend from institution to institution so just check for keys.
