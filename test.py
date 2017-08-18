@@ -9,9 +9,7 @@ For these to run, a Serial Solutions 360Link XML API key must be
 supplied.
 """
 
-from pprint import pprint
-import unittest
-import urlparse
+import os, pprint, unittest, urlparse
 from py360link2 import get_sersol_data, Resolved
 
 
@@ -39,23 +37,37 @@ class TestPmidLookup(unittest.TestCase):
 
     def test_citation(self):
         citation = self.sersol.citation
-        self.assertEqual(citation['creator'], 'Moriya, T')
+        self.assertEqual(citation['creator'], 'Moriya, T T')
         self.assertEqual(citation['doi'], '10.1177/1753193408098482')
         self.assertEqual(citation['volume'], '34')
         self.assertEqual(citation['spage'], '219')
         self.assertTrue(citation['title'].rfind('Effect of triangular') > -1)
+
+    def test_citation_types(self):
+        """ Checks for unicode keys and values in citation. """
+        citation = self.sersol.citation
+        pprint.pprint( citation.items() )
+        for ( key, val ) in citation.items():
+            if type( val ) == dict:
+                for (subkey, subval ) in val.items():
+                    self.assertEqual( type(subkey), unicode )
+                    self.assertEqual( type(subval), unicode )
+            else:
+                self.assertEqual( type(key), unicode )
+                self.assertEqual( type(val), unicode )
 
     def test_openurl(self):
         """
         We can round trip this to see if the original request is enhanced by
         the results of the 360Link resolution.
         """
-
         ourl = self.sersol.openurl
         ourl_dict = urlparse.parse_qs(ourl)
         self.assertEqual(ourl_dict['rft_id'], ['info:doi/10.1177/1753193408098482', 'info:pmid/19282400'])
-        self.assertEqual(ourl_dict['rft.eissn'][0], '1532-2211')
+        self.assertEqual(ourl_dict['rft.eissn'][0], '2043-6289')
         print ourl
+
+    ## end class TestPmidLookup()
 
 
 class TestDoiLookup(unittest.TestCase):
@@ -131,7 +143,7 @@ class TestFirstSearchArticleLookup(unittest.TestCase):
         self.sersol = Resolved(self.data)
 
     def test_link360_resolved(self):
-        pprint(self.data)
+        pprint.pprint(self.data)
         citation = self.sersol.citation
         self.assertEqual(self.sersol.format, 'journal')
         self.assertEqual(citation['title'], 'Serum and urine chromium as indices of chromium status in tannery workers.')
