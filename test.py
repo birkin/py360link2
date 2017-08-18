@@ -67,6 +67,11 @@ class TestPmidLookup(unittest.TestCase):
         self.assertEqual(ourl_dict['rft.eissn'][0], '2043-6289')
         print ourl
 
+    def test_openurl_types(self):
+        """ Checks for unicode keys and values in parsed openurl. """
+        ourl = self.sersol.openurl
+        self.assertEqual( type(ourl), unicode )
+
     ## end class TestPmidLookup()
 
 
