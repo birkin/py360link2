@@ -25,9 +25,9 @@ class TestPmidLookup(unittest.TestCase):
         data = get_sersol_data(ourl, key=KEY)
         self.sersol = Resolved(data)
 
-    def test_get_sersol_data_types(self):
-        """ Checks for unicode data in initially retrieved data. """
-        self.assertEqual( 1, 2 )
+    # def test_get_sersol_data_types(self):
+    #     """ Checks for unicode data in initially retrieved data. """
+    #     self.assertEqual( 1, 2 )
 
     def test_link_groups(self):
         """
@@ -165,6 +165,21 @@ class TestFirstSearchArticleLookup(unittest.TestCase):
         self.assertTrue(ourl_dict['rfe_dat'][0], '<accessionnumber>114380499</accessionnumber>')
         #simple string find for accession number
         self.assertTrue(ourl.rfind('114380499') > -1 )
+
+
+class TestUnicodeOpenUrlLookup( unittest.TestCase ):
+
+    def setUp(self):
+        ourl = 'url_ver=Z39.88-2004&rfr_id=info%3Asid%2Ffirstsearch.oclc.org%3AWorldCat&rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adissertation&rft.genre=dissertation&req_dat=%3Csessionid%3E0%3C%2Fsessionid%3E&rfe_dat=%3Caccessionnumber%3E699516442%3C%2Faccessionnumber%3E&rft_id=info%3Aoclcnum%2F699516442&rft.aulast=Amado+Gonzales&rft.aufirst=Donato&rft.title=El+cabildo+de+los+veinticuatro+electores+del+Alfe%CC%81rez+Real+Inca+de+las+parroquias+cuzquen%CC%83as&rft.date=2010&rfe_dat=%3Cdissnote%3ETesis+%28Mag.%29--Pontificia+Universidad+Cato%CC%81lica+del+Peru%CC%81.+Escuela+de+Graduados.+Mencio%CC%81n%3A+Historia.%3C%2Fdissnote%3E'
+        self.data = get_sersol_data(ourl, key=KEY)
+        self.sersol = Resolved(self.data)
+
+    def test_openurl(self):
+        ourl = self.sersol.openurl
+        ourl_dict = urlparse.parse_qs(ourl)
+        self.assertEqual( ourl_dict['rft.genre'][0], 'article' )
+        self.assertEqual( ourl_dict['rfe_dat'][0], '<accessionnumber>699516442</accessionnumber>' )
+        self.assertEqual( ourl_dict['rfe_dat'][1], '<dissnote>Tesis (Mag.)--Pontificia Universidad Cato\xcc\x81lica del Peru\xcc\x81. Escuela de Graduados. Mencio\xcc\x81n: Historia.</dissnote>' )
 
 
 
