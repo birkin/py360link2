@@ -91,7 +91,8 @@ def get_sersol_response(query, key, timeout):
     #Go get the 360link response
     #Base 360Link url
     base_url = "http://%s.openurl.xml.serialssolutions.com/openurlxml?" % key
-    base_url += urllib.urlencode(required_url_elements)
+    # base_url += urllib.urlencode(required_url_elements)  # python2
+    base_url += urllib.parse.urlencode( required_url_elements )
     url = base_url + '&%s' % query.lstrip('?')
     r = requests.get( url )
     # filelike_obj = StringIO.StringIO( r.content )
@@ -161,7 +162,7 @@ class Link360JSON(object):
             logger.debug( 'initial x_data, ```%s```' % x_data )
             improved_x_data = []
             for element in x_data:
-                if type(element) == unicode:
+                if type(element) == str:
                     pass
                 elif type( element ) == etree._ElementUnicodeResult:
                     pass
@@ -189,7 +190,7 @@ class Link360JSON(object):
                 return_val = r[0]
             logger.debug( 'return_val, ```%s```' % return_val )
             if return_val:
-                assert type(return_val) == unicode or type(return_val) == etree._ElementUnicodeResult, type(return_val)
+                assert type(return_val) == str or type(return_val) == etree._ElementUnicodeResult, type(return_val)
             return return_val
 
         def m(dict, *kv):
@@ -273,17 +274,17 @@ class Resolved(object):
     """
     def __init__(self, data):
         self.data = data;                                           assert type(self.data) == dict, type(self.data)
-        self.query = data['echoedQuery']['queryString'];            assert type(self.query) == unicode, type(self.query)
-        self.library = data['echoedQuery']['library']['name'];      assert type(self.library) == unicode, type(self.library)
+        self.query = data['echoedQuery']['queryString'];            assert type(self.query) == str, type(self.query)
+        self.library = data['echoedQuery']['library']['name'];      assert type(self.library) == str, type(self.library)
         self.query_dict = parse_qs(self.query);            assert type(self.query_dict) == dict, type(self.query_dict)
-        error = self.data.get('diagnostics', None);                 assert type(error) == unicode or error is None, type(error)
+        error = self.data.get('diagnostics', None);                 assert type(error) == str or error is None, type(error)
         if error:
             msg = ' '.join([e.get('message') for e in error if e])
             raise Link360Exception(msg)
         #Shortcut to first returned citation and link group
         self.citation = data['results'][0]['citation'];             assert type(self.citation) == dict, type(self.citation)
         self.link_groups = data['results'][0]['linkGroups'];        assert type(self.link_groups) == list, type(self.link_groups)
-        self.format = data['results'][0]['format'];                 assert type(self.format) == unicode, type(self.format)
+        self.format = data['results'][0]['format'];                 assert type(self.format) == str, type(self.format)
 
     # @property
     # def openurl(self):
@@ -301,7 +302,7 @@ class Resolved(object):
         for tpl in tuple_pairs:
             key, val = tpl[0], tpl[1]
             key8 = key.encode( 'utf-8' )
-            if type(val) == unicode:
+            if type(val) == str:
                 val8 = val.encode( 'utf-8' )
                 utf8_tpl_lst.append( (key8, val8) )
             elif type(val) == list:
@@ -311,7 +312,7 @@ class Resolved(object):
                 utf8_tpl_lst.append( (key8, val8_lst) )
         ourl = urllib.urlencode( utf8_tpl_lst, doseq=True )
         ourl = ourl.decode( 'utf-8' )
-        assert type( ourl ) == unicode
+        assert type( ourl ) == str
         logger.debug( 'ourl, ```%s```' % ourl )
         return ourl
 
@@ -361,7 +362,7 @@ class Resolved(object):
         be returned from the 360Link API.
         """
         retain = ['rfe_dat', 'rfr_id', 'sid']
-        assert type(self.query) == unicode
+        assert type(self.query) == str
         logger.debug( 'self.query, ```%s```' % self.query )
         query8 = self.query.encode( 'utf-8' )
         logger.debug( 'query8, ```%s```' % query8 )
@@ -369,7 +370,7 @@ class Resolved(object):
         logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
         out = []
         for key in retain:
-            assert type(key) == unicode, type(key)
+            assert type(key) == str, type(key)
             key = key.decode( 'utf-8' )
             val = parsed.get( key, None )
             logger.debug( 'initial val, ```%s```' % pprint.pformat(val) )
@@ -468,7 +469,7 @@ class Resolved(object):
         #Using a list of tuples here to account for the possiblity of repeating values.
         out = []
         for k, v in self.citation.items():
-            assert type(k) == unicode, type(k)
+            assert type(k) == str, type(k)
             #Handle issns differently.  They are a dict in the 360LinkJSON response.
             if k == 'issn':
                 issn_dict = self.citation[k]
@@ -476,22 +477,22 @@ class Resolved(object):
                     issn = issn_dict.get('print', None)
                 else:
                     issn = issn_dict
-                assert type(issn) == unicode or type(issn) == dict or issn is None
+                assert type(issn) == str or type(issn) == dict or issn is None
                 if issn:
                     out.append(('rft.issn', issn))
                 continue
             #Handle remaining keys.
             try:
                 k = SERSOL_MAP[format][k]
-                assert type(k) == unicode
+                assert type(k) == str
             except KeyError:
                 pass
             #handle ids separately
             if (k == 'doi'):
-                assert type(v) == unicode
+                assert type(v) == str
                 out.append(('rft_id', 'info:doi/%s' % v))
             elif (k == 'pmid'):
-                assert type(v) == unicode
+                assert type(v) == str
                 #We will append a plain pmid for systems that will resolve that.
                 out.append(('pmid', v))
                 out.append(('rft_id', 'info:pmid/%s' % v))
