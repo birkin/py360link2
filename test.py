@@ -41,7 +41,7 @@ class TestPmidLookup(unittest.TestCase):
 
     def test_citation(self):
         citation = self.sersol.citation
-        self.assertEqual(citation['creator'], 'Moriya, T T')
+        self.assertEqual(citation['creator'], 'Moriya, T')
         self.assertEqual(citation['doi'], '10.1177/1753193408098482')
         self.assertEqual(citation['volume'], '34')
         self.assertEqual(citation['spage'], '219')
