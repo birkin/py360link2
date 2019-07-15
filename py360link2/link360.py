@@ -366,7 +366,8 @@ class Resolved(object):
         logger.debug( 'self.query, ```%s```' % self.query )
         query8 = self.query.encode( 'utf-8' )
         logger.debug( 'query8, ```%s```' % query8 )
-        parsed = parse_qs( query8 ); assert type(parsed) == dict
+        parsed = parse_qs( query8 )
+        assert type(parsed) == dict
         logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
         out = []
         for key in retain:
