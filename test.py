@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 """
 Tests for handling OpenURLs with 360Link.
 
@@ -9,8 +7,20 @@ For these to run, a Serial Solutions 360Link XML API key must be
 supplied.
 """
 
-import os, pprint, unittest, urlparse
-from py360link2 import get_sersol_data, Resolved
+import logging, os, pprint, sys, unittest
+from urllib.parse import parse_qs
+# from py360link2 import get_sersol_data, Resolved
+try:
+    from py360link2 import get_sersol_data, Resolved
+except:
+    sys.path.append( '../' )  # accessed when running, eg, `python ./openurl.py TestFromOpenURL.test_unicode_dump`
+    from py360link2 import get_sersol_data, Resolved
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', datefmt='%d/%b/%Y %H:%M:%S' )
+log = logging.getLogger( 'py360link2' )
 
 
 #A 360Link API key needs to be specified here.
@@ -66,10 +76,11 @@ class TestPmidLookup(unittest.TestCase):
         the results of the 360Link resolution.
         """
         ourl = self.sersol.openurl
-        ourl_dict = urlparse.parse_qs(ourl)
+        ourl_dict = parse_qs(ourl)
         self.assertEqual(ourl_dict['rft_id'], ['info:doi/10.1177/1753193408098482', 'info:pmid/19282400'])
         self.assertEqual(ourl_dict['rft.eissn'][0], '2043-6289')
-        print ourl
+        # print ourl
+        log.debug( f'ourl, ```{ourl}```' )
 
     def test_openurl_types(self):
         """ Checks for unicode keys and values in parsed openurl. """
@@ -121,7 +132,7 @@ class TestCiteLookup(unittest.TestCase):
         Check for the enhanced data.
         """
         ourl = self.sersol.openurl
-        ourl_dict = urlparse.parse_qs(ourl)
+        ourl_dict = parse_qs(ourl)
         self.assertEqual(ourl_dict['rft.eissn'][0], '1523-7052')
 
 class TestFirstSearchBookLookup(unittest.TestCase):
@@ -139,7 +150,7 @@ class TestFirstSearchBookLookup(unittest.TestCase):
 
     def test_openurl(self):
         ourl = self.sersol.openurl
-        ourl_dict = urlparse.parse_qs(ourl)
+        ourl_dict = parse_qs(ourl)
         self.assertTrue(ourl_dict['rfe_dat'][0], '<accessionnumber>17803510</accessionnumber>')
         #simple string find for accession number
         self.assertTrue(ourl.rfind('17803510') > -1 )
@@ -160,7 +171,7 @@ class TestFirstSearchArticleLookup(unittest.TestCase):
 
     def test_openurl(self):
         ourl = self.sersol.openurl
-        ourl_dict = urlparse.parse_qs(ourl)
+        ourl_dict = parse_qs(ourl)
         self.assertTrue(ourl_dict['rft.genre'][0], 'article')
         self.assertTrue(ourl_dict['rfe_dat'][0], '<accessionnumber>114380499</accessionnumber>')
         #simple string find for accession number
@@ -176,7 +187,7 @@ class TestUnicodeOpenUrlLookup( unittest.TestCase ):
 
     def test_openurl(self):
         ourl = self.sersol.openurl
-        ourl_dict = urlparse.parse_qs(ourl)
+        ourl_dict = parse_qs(ourl)
         self.assertEqual( ourl_dict['rft.genre'][0], 'article' )
         self.assertEqual( ourl_dict['rfe_dat'][0], '<accessionnumber>699516442</accessionnumber>' )
         self.assertEqual( ourl_dict['rfe_dat'][1], '<dissnote>Tesis (Mag.)--Pontificia Universidad Cato\xcc\x81lica del Peru\xcc\x81. Escuela de Graduados. Mencio\xcc\x81n: Historia.</dissnote>' )
