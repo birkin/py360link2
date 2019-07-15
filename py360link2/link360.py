@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-import json, io, logging, pprint, re, sys, urllib, urllib2, urlparse
+import json, io, logging, pprint, re, sys, urllib
 assert sys.version_info.major > 2
+from urllib.parse import parse_qs
 
 import requests
 from lxml import etree
@@ -274,7 +275,7 @@ class Resolved(object):
         self.data = data;                                           assert type(self.data) == dict, type(self.data)
         self.query = data['echoedQuery']['queryString'];            assert type(self.query) == unicode, type(self.query)
         self.library = data['echoedQuery']['library']['name'];      assert type(self.library) == unicode, type(self.library)
-        self.query_dict = urlparse.parse_qs(self.query);            assert type(self.query_dict) == dict, type(self.query_dict)
+        self.query_dict = parse_qs(self.query);            assert type(self.query_dict) == dict, type(self.query_dict)
         error = self.data.get('diagnostics', None);                 assert type(error) == unicode or error is None, type(error)
         if error:
             msg = ' '.join([e.get('message') for e in error if e])
@@ -364,7 +365,7 @@ class Resolved(object):
         logger.debug( 'self.query, ```%s```' % self.query )
         query8 = self.query.encode( 'utf-8' )
         logger.debug( 'query8, ```%s```' % query8 )
-        parsed = urlparse.parse_qs( query8 ); assert type(parsed) == dict
+        parsed = parse_qs( query8 ); assert type(parsed) == dict
         logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
         out = []
         for key in retain:
@@ -455,7 +456,7 @@ class Resolved(object):
 
         See http://ocoins.info/cobg.html for implementation guidelines.
         """
-        query = urlparse.parse_qs(self.query)  # creates a dct
+        query = parse_qs(self.query)  # creates a dct
         format = self.format
         #Pop invalid rft_id from OCLC
         try:
