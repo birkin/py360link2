@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-import json, logging, pprint, re, StringIO, urllib, urllib2, urlparse
+
+import json, logging, pprint, re, StringIO, sys, urllib, urllib2, urlparse
+assert sys.version_info.major > 2
+
 import requests
 from lxml import etree
 
