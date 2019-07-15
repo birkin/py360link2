@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import json, logging, pprint, re, StringIO, sys, urllib, urllib2, urlparse
+import json, io, logging, pprint, re, sys, urllib, urllib2, urlparse
 assert sys.version_info.major > 2
 
 import requests
@@ -93,7 +93,8 @@ def get_sersol_response(query, key, timeout):
     base_url += urllib.urlencode(required_url_elements)
     url = base_url + '&%s' % query.lstrip('?')
     r = requests.get( url )
-    filelike_obj = StringIO.StringIO( r.content )
+    # filelike_obj = StringIO.StringIO( r.content )
+    filelike_obj = io.BytesIO( r.content )
     doc = etree.parse( filelike_obj )
     return doc
 
