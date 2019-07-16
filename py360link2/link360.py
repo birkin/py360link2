@@ -286,35 +286,39 @@ class Resolved(object):
         self.link_groups = data['results'][0]['linkGroups'];        assert type(self.link_groups) == list, type(self.link_groups)
         self.format = data['results'][0]['format'];                 assert type(self.format) == str, type(self.format)
 
+    @property
+    def openurl(self):
+        return urllib.parse.urlencode( self.openurl_pairs(), doseq=True )
+
     # @property
     # def openurl(self):
     #     return urllib.urlencode(self.openurl_pairs(), doseq=True)
 
-    @property
-    def openurl(self):
-        logger.debug( 'starting' )
-        tuple_pairs = self.openurl_pairs()
-        assert type( tuple_pairs ) == list, type( tuple_pairs )
-        assert type( tuple_pairs[0] ) == tuple, type( tuple_pairs[0] )
-        logger.debug( 'tuple_pairs, ```%s```' % pprint.pformat(tuple_pairs) )
-        ## create list of utf-8 tuples
-        utf8_tpl_lst = []
-        for tpl in tuple_pairs:
-            key, val = tpl[0], tpl[1]
-            key8 = key.encode( 'utf-8' )
-            if type(val) == str:
-                val8 = val.encode( 'utf-8' )
-                utf8_tpl_lst.append( (key8, val8) )
-            elif type(val) == list:
-                val8_lst = []
-                for element in val:
-                    val8_lst.append( element.encode('utf-8') )
-                utf8_tpl_lst.append( (key8, val8_lst) )
-        ourl = urllib.urlencode( utf8_tpl_lst, doseq=True )
-        ourl = ourl.decode( 'utf-8' )
-        assert type( ourl ) == str
-        logger.debug( 'ourl, ```%s```' % ourl )
-        return ourl
+    # @property
+    # def openurl(self):
+    #     logger.debug( 'starting' )
+    #     tuple_pairs = self.openurl_pairs()
+    #     assert type( tuple_pairs ) == list, type( tuple_pairs )
+    #     assert type( tuple_pairs[0] ) == tuple, type( tuple_pairs[0] )
+    #     logger.debug( 'tuple_pairs, ```%s```' % pprint.pformat(tuple_pairs) )
+    #     ## create list of utf-8 tuples
+    #     utf8_tpl_lst = []
+    #     for tpl in tuple_pairs:
+    #         key, val = tpl[0], tpl[1]
+    #         key8 = key.encode( 'utf-8' )
+    #         if type(val) == str:
+    #             val8 = val.encode( 'utf-8' )
+    #             utf8_tpl_lst.append( (key8, val8) )
+    #         elif type(val) == list:
+    #             val8_lst = []
+    #             for element in val:
+    #                 val8_lst.append( element.encode('utf-8') )
+    #             utf8_tpl_lst.append( (key8, val8_lst) )
+    #     ourl = urllib.urlencode( utf8_tpl_lst, doseq=True )
+    #     ourl = ourl.decode( 'utf-8' )
+    #     assert type( ourl ) == str
+    #     logger.debug( 'ourl, ```%s```' % ourl )
+    #     return ourl
 
     @property
     def oclc_number(self):
@@ -471,6 +475,9 @@ class Resolved(object):
         #Get the special keys.
         retained_values = self._retain_ourl_params()
         out += retained_values
+        logger.debug( f'out, ```{pprint.pformat(out)}```' )
         return out
 
-    # end class Resolved
+        ## end def openurl_pairs()
+
+    ## end class Resolved

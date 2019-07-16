@@ -190,7 +190,8 @@ class TestUnicodeOpenUrlLookup( unittest.TestCase ):
         ourl_dict = parse_qs(ourl)
         self.assertEqual( ourl_dict['rft.genre'][0], 'article' )
         self.assertEqual( ourl_dict['rfe_dat'][0], '<accessionnumber>699516442</accessionnumber>' )
-        self.assertEqual( ourl_dict['rfe_dat'][1], '<dissnote>Tesis (Mag.)--Pontificia Universidad Cato\xcc\x81lica del Peru\xcc\x81. Escuela de Graduados. Mencio\xcc\x81n: Historia.</dissnote>' )
+        # self.assertEqual( ourl_dict['rfe_dat'][1], '<dissnote>Tesis (Mag.)--Pontificia Universidad Cato\xcc\x81lica del Peru\xcc\x81. Escuela de Graduados. Mencio\xcc\x81n: Historia.</dissnote>' )
+        self.assertEqual( ourl_dict['rfe_dat'][1], b'<dissnote>Tesis (Mag.)--Pontificia Universidad Cato\xcc\x81lica del Peru\xcc\x81. Escuela de Graduados. Mencio\xcc\x81n: Historia.</dissnote>'.decode('utf-8') )
 
 
 
