@@ -332,26 +332,6 @@ class Resolved(object):
                 return match.group()
         return
 
-    # def _retain_ourl_params(self):
-    #     """
-    #     Parse the original query string and retain certain key, values.
-    #     Primarily meant for storing the worldcat accession number passed on
-    #     by http://worldcat.org or FirstSearch.
-
-    #     This could be also helpful for retaining any other metadata that won't
-    #     be returned from the 360Link API.
-    #     """
-    #     retain = ['rfe_dat', 'rfr_id', 'sid']
-    #     parsed = urlparse.parse_qs(self.query); assert type(parsed) == dict
-    #     logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
-    #     out = []
-    #     for key in retain:
-    #         val = parsed.get(key, None)
-    #         assert type(val) == unicode, type(val)
-    #         if val:
-    #             out.append((key, val))
-    #     return out
-
     def _retain_ourl_params(self):
         """
         Parse the original query string and retain certain key, values.
@@ -364,89 +344,67 @@ class Resolved(object):
         retain = ['rfe_dat', 'rfr_id', 'sid']
         assert type(self.query) == str
         logger.debug( 'self.query, ```%s```' % self.query )
-        query8 = self.query.encode( 'utf-8' )
-        logger.debug( 'query8, ```%s```' % query8 )
-        parsed = parse_qs( query8 )
-        assert type(parsed) == dict
+        # query8 = self.query.encode( 'utf-8' )
+        # logger.debug( 'query8, ```%s```' % query8 )
+        # parsed = parse_qs( query8 )
+        parsed = parse_qs( self.query )
+        assert type( parsed ) == dict
         logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
         out = []
         for key in retain:
             assert type(key) == str, type(key)
-            key = key.decode( 'utf-8' )
+            # key = key.decode( 'utf-8' )
             val = parsed.get( key, None )
             logger.debug( 'initial val, ```%s```' % pprint.pformat(val) )
             assert type(val) == str or val is None or type(val) == list, type(val)
             if val:
                 if type(val) == str:
-                    new_val = val.decode( 'utf-8' )
+                    # new_val = val.decode( 'utf-8' )
+                    new_val = val
                 elif type(val) == list:
                     new_val = []
-                    for element8 in val:
-                        new_val.append( element8.decode('utf-8') )
-                out.append((key, new_val))
+                    # for element8 in val:
+                    #     new_val.append( element8.decode('utf-8') )
+                    for element in val:
+                        assert type(element) == str or val is None, type(val)
+                        new_val.append( element )
+                out.append( (key, new_val) )
         logger.debug( 'out, ```%s```' % out )
         return out
 
-    # def openurl_pairs(self):
+    # def _retain_ourl_params(self):
     #     """
-    #     Create a default OpenURL from the given citation that can be passed
-    #     on to other systems for querying.
+    #     Parse the original query string and retain certain key, values.
+    #     Primarily meant for storing the worldcat accession number passed on
+    #     by http://worldcat.org or FirstSearch.
 
-    #     Subclass this to handle needs for specific system.
-
-    #     See http://ocoins.info/cobg.html for implementation guidelines.
+    #     This could be also helpful for retaining any other metadata that won't
+    #     be returned from the 360Link API.
     #     """
-    #     query = urlparse.parse_qs(self.query)
-    #     format = self.format
-    #     #Pop invalid rft_id from OCLC
-    #     try:
-
-    #         if query['rft_id'][0].startswith('info:oclcnum'):
-    #             del query['rft_id']
-    #     except KeyError:
-    #         pass
-    #     #Massage the citation into an OpenURL
-    #     #Using a list of tuples here to account for the possiblity of repeating values.
+    #     retain = ['rfe_dat', 'rfr_id', 'sid']
+    #     assert type(self.query) == str
+    #     logger.debug( 'self.query, ```%s```' % self.query )
+    #     query8 = self.query.encode( 'utf-8' )
+    #     logger.debug( 'query8, ```%s```' % query8 )
+    #     parsed = parse_qs( query8 )
+    #     assert type(parsed) == dict
+    #     logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
     #     out = []
-    #     for k, v in self.citation.items():
-    #         #Handle issns differently.  They are a dict in the 360LinkJSON response.
-    #         if k == 'issn':
-    #             issn_dict = self.citation[k]
-    #             if isinstance(issn_dict, dict):
-    #                 issn = issn_dict.get('print', None)
-    #             else:
-    #                 issn = issn_dict
-    #             if issn:
-    #                 out.append(('rft.issn', issn))
-    #             continue
-    #         #Handle remaining keys.
-    #         try:
-    #             k = SERSOL_MAP[format][k]
-    #         except KeyError:
-    #             pass
-    #         #handle ids separately
-    #         if (k == 'doi'):
-    #             out.append(('rft_id', 'info:doi/%s' % v))
-    #         elif (k == 'pmid'):
-    #             #We will append a plain pmid for systems that will resolve that.
-    #             out.append(('pmid', v))
-    #             out.append(('rft_id', 'info:pmid/%s' % v))
-    #         else:
-    #             out.append(('rft.%s' % k, v))
-    #     #versioning
-    #     out.append(('url_ver', 'Z39.88-2004'))
-    #     out.append(('version', '1.0'))
-    #     #handle formats
-    #     if format == 'book':
-    #         out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:book'))
-    #         out.append(('rft.genre', 'book'))
-    #     #for now will treat all non-books as journals
-    #     else:
-    #         out.append(('rft_val_fmt', 'info:ofi/fmt:kev:mtx:journal'))
-    #         out.append(('rft.genre', 'article'))
-    #     #Get the special keys.
-    #     retained_values = self._retain_ourl_params()
-    #     out += retained_values
+    #     for key in retain:
+    #         assert type(key) == str, type(key)
+    #         key = key.decode( 'utf-8' )
+    #         val = parsed.get( key, None )
+    #         logger.debug( 'initial val, ```%s```' % pprint.pformat(val) )
+    #         assert type(val) == str or val is None or type(val) == list, type(val)
+    #         if val:
+    #             if type(val) == str:
+    #                 new_val = val.decode( 'utf-8' )
+    #             elif type(val) == list:
+    #                 new_val = []
+    #                 for element8 in val:
+    #                     new_val.append( element8.decode('utf-8') )
+    #             out.append((key, new_val))
+    #     logger.debug( 'out, ```%s```' % out )
     #     return out
 
     def openurl_pairs(self):
