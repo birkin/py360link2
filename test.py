@@ -47,7 +47,8 @@ class TestPmidLookup(unittest.TestCase):
         required = ['url', 'holdingData', 'type']
         for link in link_groups:
             for req in required:
-                self.assertTrue(link.has_key(req))
+                # self.assertTrue(link.has_key(req))
+                self.assertTrue( req in link.keys() )
 
     def test_citation(self):
         citation = self.sersol.citation
