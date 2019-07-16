@@ -13,13 +13,15 @@ from urllib.parse import parse_qs
 try:
     from py360link2 import get_sersol_data, Resolved
 except:
+    log.exception( 'exception on import follows, but is handled' )
     sys.path.append( '../' )  # accessed when running, eg, `python ./openurl.py TestFromOpenURL.test_unicode_dump`
     from py360link2 import get_sersol_data, Resolved
 
 
 logging.basicConfig(
     level=logging.WARNING,
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s', datefmt='%d/%b/%Y %H:%M:%S' )
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S' )
 log = logging.getLogger( 'py360link2' )
 
 
@@ -61,7 +63,8 @@ class TestPmidLookup(unittest.TestCase):
     def test_citation_types(self):
         """ Checks for unicode keys and values in citation. """
         citation = self.sersol.citation
-        pprint.pprint( citation.items() )
+        # pprint.pprint( citation.items() )
+        log.debug( f'citation.items(), ```{pprint.pformat(citation.items())}```' )
         for ( key, val ) in citation.items():
             if type( val ) == dict:
                 for (subkey, subval ) in val.items():
@@ -164,7 +167,8 @@ class TestFirstSearchArticleLookup(unittest.TestCase):
         self.sersol = Resolved(self.data)
 
     def test_link360_resolved(self):
-        pprint.pprint(self.data)
+        # pprint.pprint(self.data)
+        log.debug( f'self.data, ```{self.data}```' )
         citation = self.sersol.citation
         self.assertEqual(self.sersol.format, 'journal')
         self.assertEqual(citation['title'], 'Serum and urine chromium as indices of chromium status in tannery workers.')

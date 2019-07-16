@@ -11,19 +11,27 @@ from lxml import etree
 
 #Added to avoid the following errors:
 #Cannot convert lxml.etree._RotatingErrorLog to lxml.etree._BaseErrorLog
-class Logger(etree.PyErrorLog):
-    def log(self, entry, message, *args):
-        pass
-etree.use_global_python_log(Logger())
+# class Logger(etree.PyErrorLog):
+#     def log(self, entry, message, *args):
+#         pass
+# etree.use_global_python_log(Logger())
 
+
+# logging.basicConfig(
+#     filename='', level='DEBUG',
+#     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+#     datefmt='%d/%b/%Y %H:%M:%S'
+#     )
+# logger = logging.getLogger(__name__)
+# log.debug( 'link360.py START' )
 
 logging.basicConfig(
-    filename='', level='DEBUG',
+    level=logging.WARNING,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S'
     )
-logger = logging.getLogger(__name__)
-logger.debug( 'link360.py START' )
+log = logging.getLogger( 'py360link2' )
+log.debug( 'link360.py START' )
 
 
 SERSOL_KEY = None
@@ -112,15 +120,15 @@ def get_sersol_data(query, key=None, timeout=5):
     Conversion to and from json is because `data` contains lxml _ElementStringResult elements,
     which can cause pickling problems.
     """
-    logger.debug( 'starting get_sersol_data()' )
+    log.debug( 'starting get_sersol_data()' )
     if query is None:
         raise Link360Exception('OpenURL query required.')
     doc = get_sersol_response(query, key, timeout)
     data = Link360JSON(doc).convert()
-    logger.debug( 'data, ```%s```' % pprint.pformat(data) )
+    log.debug( 'data, ```%s```' % pprint.pformat(data) )
     jsn = json.dumps( data )
     jdct = json.loads( jsn )
-    # logger.debug( 'jdct, ```%s```' % pprint.pformat(jdct) )
+    # log.debug( 'jdct, ```%s```' % pprint.pformat(jdct) )
     return jdct
 
 
@@ -135,7 +143,7 @@ class Link360JSON(object):
 
     def convert(self):
 
-        logger.debug( 'starting convert' )
+        log.debug( 'starting convert' )
 
         ns = {
             "ss" : "http://xml.serialssolutions.com/ns/openurl/v1.0",
@@ -145,21 +153,21 @@ class Link360JSON(object):
 
         # def x(xpathexpr, root = self.doc):
         #     x_data = root.xpath(xpathexpr, namespaces=ns)
-        #     # logger.debug( x_data )
+        #     # log.debug( x_data )
         #     # if type(x_data) == list:
         #     #     if len( x_data ) > 0:
-        #     #         logger.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
+        #     #         log.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
         #     return x_data
 
         def x(xpathexpr, root=self.doc):
             """ Called by return m() """
-            logger.debug( 'xpathexpr, ```%s```' % xpathexpr )
+            log.debug( 'xpathexpr, ```%s```' % xpathexpr )
             x_data = root.xpath(xpathexpr, namespaces=ns)
-            # logger.debug( x_data )
+            # log.debug( x_data )
             # if type(x_data) == list:
             #     if len( x_data ) > 0:
-            #         logger.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
-            logger.debug( 'initial x_data, ```%s```' % x_data )
+            #         log.debug( 'type(x_data[0]), `%s`' % type(x_data[0]) )
+            log.debug( 'initial x_data, ```%s```' % x_data )
             improved_x_data = []
             for element in x_data:
                 if type(element) == str:
@@ -169,12 +177,12 @@ class Link360JSON(object):
                 elif type( element ) == etree._ElementStringResult:
                     element = element.decode( 'utf-8' )
                 elif type( element ) == etree._Element:
-                    logger.debug( 'hmmm, how to handle type(element), ```%s```?' % type(element) )
-                    logger.debug( 'stringified, ```%s```' % etree.tostring(element) )
+                    log.debug( 'hmmm, how to handle type(element), ```%s```?' % type(element) )
+                    log.debug( 'stringified, ```%s```' % etree.tostring(element) )
                 else:
-                    logger.debug( 'uh oh, type(element), ```%s```' % type(element) )
+                    log.debug( 'uh oh, type(element), ```%s```' % type(element) )
                 improved_x_data.append( element )
-            logger.debug( 'final x_data, ```%s```' % improved_x_data )
+            log.debug( 'final x_data, ```%s```' % improved_x_data )
             return improved_x_data
 
         # def t(xpathexpr, root = self.doc):
@@ -188,7 +196,7 @@ class Link360JSON(object):
             r = x(xpathexpr, root)
             if len(r) > 0:
                 return_val = r[0]
-            logger.debug( 'return_val, ```%s```' % return_val )
+            log.debug( 'return_val, ```%s```' % return_val )
             if return_val:
                 assert type(return_val) == str or type(return_val) == etree._ElementUnicodeResult, type(return_val)
             return return_val
@@ -198,7 +206,7 @@ class Link360JSON(object):
             for (k, v) in kv:
                 if v:
                     dict[k] = v
-            logger.debug( 'dict, ```%s```' % pprint.pformat(dict) )
+            log.debug( 'dict, ```%s```' % pprint.pformat(dict) )
             return dict
 
         return m({
@@ -296,11 +304,11 @@ class Resolved(object):
 
     # @property
     # def openurl(self):
-    #     logger.debug( 'starting' )
+    #     log.debug( 'starting' )
     #     tuple_pairs = self.openurl_pairs()
     #     assert type( tuple_pairs ) == list, type( tuple_pairs )
     #     assert type( tuple_pairs[0] ) == tuple, type( tuple_pairs[0] )
-    #     logger.debug( 'tuple_pairs, ```%s```' % pprint.pformat(tuple_pairs) )
+    #     log.debug( 'tuple_pairs, ```%s```' % pprint.pformat(tuple_pairs) )
     #     ## create list of utf-8 tuples
     #     utf8_tpl_lst = []
     #     for tpl in tuple_pairs:
@@ -317,7 +325,7 @@ class Resolved(object):
     #     ourl = urllib.urlencode( utf8_tpl_lst, doseq=True )
     #     ourl = ourl.decode( 'utf-8' )
     #     assert type( ourl ) == str
-    #     logger.debug( 'ourl, ```%s```' % ourl )
+    #     log.debug( 'ourl, ```%s```' % ourl )
     #     return ourl
 
     @property
@@ -347,19 +355,19 @@ class Resolved(object):
         """
         retain = ['rfe_dat', 'rfr_id', 'sid']
         assert type(self.query) == str
-        logger.debug( 'self.query, ```%s```' % self.query )
+        log.debug( 'self.query, ```%s```' % self.query )
         # query8 = self.query.encode( 'utf-8' )
-        # logger.debug( 'query8, ```%s```' % query8 )
+        # log.debug( 'query8, ```%s```' % query8 )
         # parsed = parse_qs( query8 )
         parsed = parse_qs( self.query )
         assert type( parsed ) == dict
-        logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
+        log.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
         out = []
         for key in retain:
             assert type(key) == str, type(key)
             # key = key.decode( 'utf-8' )
             val = parsed.get( key, None )
-            logger.debug( 'initial val, ```%s```' % pprint.pformat(val) )
+            log.debug( 'initial val, ```%s```' % pprint.pformat(val) )
             assert type(val) == str or val is None or type(val) == list, type(val)
             if val:
                 if type(val) == str:
@@ -373,7 +381,7 @@ class Resolved(object):
                         assert type(element) == str or val is None, type(val)
                         new_val.append( element )
                 out.append( (key, new_val) )
-        logger.debug( 'out, ```%s```' % out )
+        log.debug( 'out, ```%s```' % out )
         return out
 
     # def _retain_ourl_params(self):
@@ -387,18 +395,18 @@ class Resolved(object):
     #     """
     #     retain = ['rfe_dat', 'rfr_id', 'sid']
     #     assert type(self.query) == str
-    #     logger.debug( 'self.query, ```%s```' % self.query )
+    #     log.debug( 'self.query, ```%s```' % self.query )
     #     query8 = self.query.encode( 'utf-8' )
-    #     logger.debug( 'query8, ```%s```' % query8 )
+    #     log.debug( 'query8, ```%s```' % query8 )
     #     parsed = parse_qs( query8 )
     #     assert type(parsed) == dict
-    #     logger.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
+    #     log.debug( 'parsed, ```%s```' % pprint.pformat(parsed) )
     #     out = []
     #     for key in retain:
     #         assert type(key) == str, type(key)
     #         key = key.decode( 'utf-8' )
     #         val = parsed.get( key, None )
-    #         logger.debug( 'initial val, ```%s```' % pprint.pformat(val) )
+    #         log.debug( 'initial val, ```%s```' % pprint.pformat(val) )
     #         assert type(val) == str or val is None or type(val) == list, type(val)
     #         if val:
     #             if type(val) == str:
@@ -408,7 +416,7 @@ class Resolved(object):
     #                 for element8 in val:
     #                     new_val.append( element8.decode('utf-8') )
     #             out.append((key, new_val))
-    #     logger.debug( 'out, ```%s```' % out )
+    #     log.debug( 'out, ```%s```' % out )
     #     return out
 
     def openurl_pairs(self):
@@ -475,7 +483,7 @@ class Resolved(object):
         #Get the special keys.
         retained_values = self._retain_ourl_params()
         out += retained_values
-        logger.debug( f'out, ```{pprint.pformat(out)}```' )
+        log.debug( f'out, ```{pprint.pformat(out)}```' )
         return out
 
         ## end def openurl_pairs()
