@@ -64,11 +64,11 @@ class TestPmidLookup(unittest.TestCase):
         for ( key, val ) in citation.items():
             if type( val ) == dict:
                 for (subkey, subval ) in val.items():
-                    self.assertEqual( type(subkey), unicode )
-                    self.assertEqual( type(subval), unicode )
+                    self.assertEqual( type(subkey), str )
+                    self.assertEqual( type(subval), str )
             else:
-                self.assertEqual( type(key), unicode )
-                self.assertEqual( type(val), unicode )
+                self.assertEqual( type(key), str )
+                self.assertEqual( type(val), str )
 
     def test_openurl(self):
         """
@@ -85,7 +85,7 @@ class TestPmidLookup(unittest.TestCase):
     def test_openurl_types(self):
         """ Checks for unicode keys and values in parsed openurl. """
         ourl = self.sersol.openurl
-        self.assertEqual( type(ourl), unicode )
+        self.assertEqual( type(ourl), str )
 
     ## end class TestPmidLookup()
 
