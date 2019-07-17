@@ -9,20 +9,19 @@ supplied.
 
 import logging, os, pprint, sys, unittest
 from urllib.parse import parse_qs
-# from py360link2 import get_sersol_data, Resolved
-try:
-    from py360link2 import get_sersol_data, Resolved
-except:
-    log.exception( 'exception on import follows, but is handled' )
-    sys.path.append( '../' )  # accessed when running, eg, `python ./openurl.py TestFromOpenURL.test_unicode_dump`
-    from py360link2 import get_sersol_data, Resolved
-
 
 logging.basicConfig(
     level=logging.WARNING,
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S' )
 log = logging.getLogger( 'py360link2' )
+
+try:
+    from py360link2 import get_sersol_data, Resolved
+except:
+    log.exception( 'exception on import follows, but is handled' )
+    sys.path.append( '../' )  # accessed when running, eg, `python ./openurl.py TestFromOpenURL.test_unicode_dump`
+    from py360link2 import get_sersol_data, Resolved
 
 
 #A 360Link API key needs to be specified here.
